@@ -13,7 +13,11 @@ export async function POST(req: Request) {
     const rating = searchParams.get("rating");
     const comment = searchParams.get("comment");
 
-    console.log("Received review:", { id, name, rating, comment });
+    // Parse system prompt from request body
+    const body = await req.json();
+    const systemPrompt =
+      body.prompt ||
+      "You are a helpful assistant reviewing customer feedback. Provide a thoughtful response to the review.";
 
     // Generate AI response for the review
     const result = await generateObject({
@@ -21,8 +25,7 @@ export async function POST(req: Request) {
       messages: [
         {
           role: "system",
-          content:
-            "You are a helpful assistant reviewing customer feedback. Provide a thoughtful response to the review.",
+          content: systemPrompt,
         },
         {
           role: "user",
@@ -42,7 +45,7 @@ export async function POST(req: Request) {
 
     return new Response(result.object.response, {
       status: 200,
-      headers: { "Content-Type": "text/plain" },
+      headers: { "Content-Type": "plain/text" },
     });
   } catch (error) {
     console.error("Error processing review:", error);
